@@ -2,10 +2,16 @@ module HELP
   module_function
 
   def help
-    [
-      '*AWS*',
-      '`ec2 create`: provision an aws vm',
-      '`ec2 keypair`: retrieves SLAMs aws keypair'
-    ].join("\n")
+    lines = []
+    pp @sections
+    @sections.each do |section, helper|
+      lines << "*#{section}*\n#{helper.help}\n"
+    end
+    pp lines.join("\n")
+    yield lines.join("\n")
   end
+
+  @sections = {
+    'AWS' => EC2
+  }
 end

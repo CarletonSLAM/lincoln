@@ -6,10 +6,10 @@ module EC2
 
   def create(*args)
     name = args.flatten.first
+    yield 'Your vm is being created.'
     vm = create_instance(name)
-    "#{name} was created. To login use " \
-    "`ssh ubuntu@#{vm.public_ip_address} -i ~/.ssh/slam.pem`.\n" \
-    'Use `link ec2 keypair` to get the keypair.'
+    yield "#{name} (#{vm.instance_id}) was created. " \
+      "To login use `ssh ubuntu@#{vm.public_ip_address} -i ~/.ssh/slam.pem`.\n"
   end
 
   def list
@@ -22,16 +22,26 @@ module EC2
       response << "#{name}#{vm.instance_id}#{ip}\n"
     end
     response << '```'
+    yield response
   end
 
   def destroy(*args)
     id = args.flatten.first
     vm = destroy_instance(id)
-    "Your vm (#{vm.instance_id}) was destroyed."
+    yield "Your vm (#{vm.instance_id}) was destroyed"
   end
 
-  def keypair
-    'Not implemented.'
+  def keypair(&block)
+    filepath = File.join(Dir.home, '.ssh', 'slam.pem')
+    key = File.exist?(filepath) ? File.read(filepath) : ENV['SLAM_KEYPAIR']
+    yield "```\n#{key}\n```"
+  end
+
+  def help
+    "`link ec2 create :name`: create a new ec2 instance\n" \
+    "`link ec2 list`: list the all ec2 instances\n" \
+    "`link ec2 destroy :id`: destroy an instance\n" \
+    "`link ec2 keypair`: display the slam keypair file\n"
   end
 
   def create_instance(name)

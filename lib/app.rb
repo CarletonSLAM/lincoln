@@ -9,31 +9,27 @@ require_relative 'help'
 
 post '/gateway' do
   return unless params['token'] == ENV['LINCOLN_WEBHOOK_TOKEN']
-  pp params
-  respond(params)
+  message(params['text'].gsub(params['trigger_word'], '').strip.split)
   status 200
 end
 
-def respond(params)
-  @lincoln ||= Slack.new
-  tokens = params['text'].gsub(params['trigger_word'], '').strip.split
-  pp mess = message(tokens)
-  @lincoln.message(params[:channel_id], mess)
-end
-
 def message(tokens)
+  @lincoln ||= Slack.new
   namespace = Module.const_get(tokens.shift.upcase)
-  pp namespace
   if tokens.empty?
-    namespace == HELP ? HELP.help : 'what was that?'
+    if namespace == HELP
+      HELP.help { |msg| @lincoln.message params[:channel_id], msg }
+    else
+      @lincoln.message params[:channel_id], namespace.public_send(:help)
+    end
   else
     method = tokens.shift.downcase
     if tokens.empty?
-      namespace.public_send(method)
+      namespace.public_send(method) { |msg| @lincoln.message params[:channel_id], msg }
     else
-      namespace.public_send(method, tokens)
+      namespace.public_send(method, tokens) { |msg| @lincoln.message params[:channel_id], msg }
     end
   end
 rescue NameError
-  'what was that?'
+  @lincoln.message params[:channel_id], 'what was that?'
 end
