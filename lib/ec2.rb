@@ -25,8 +25,9 @@ module EC2
   end
 
   def destroy(*args)
-    vm = destroy_instance(*args.first)
-    "Your vm (#{vm.id}) was destroyed."
+    id = args.flatten.first
+    vm = destroy_instance(id)
+    "Your vm (#{vm.instance_id}) was destroyed."
   end
 
   def keypair
@@ -58,9 +59,7 @@ module EC2
 
   def destroy_instance(id)
     client = Aws::EC2::Client.new(region: 'us-west-2')
-    resp = client.describe_instances(instance_ids: [id])
-    instance = resp.reservations.first.instances.detect { |vm| vm.id == id }
-    instance.terminate.first.wait_until_terminated
+    client.terminate_instances(instance_ids: [id]).terminating_instances.first
   end
 
   def ec2_instance_options
