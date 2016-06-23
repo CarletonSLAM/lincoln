@@ -47,7 +47,7 @@ module EC2
   def create_instance(name)
     client = Aws::EC2::Client.new(region: 'us-east-1')
     vm = Aws::EC2::Resource.new(client: client)
-    ami = vm.image('ami-5189a661')
+    ami = vm.image('ami-fce3c696')
     key_pair = vm.key_pair('slam')
     instance_options = ec2_instance_options.merge(
       image_id: ami.image_id,
