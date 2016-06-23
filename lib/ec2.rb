@@ -31,7 +31,7 @@ module EC2
     yield "Your vm (#{vm.instance_id}) was destroyed"
   end
 
-  def keypair(&block)
+  def keypair
     filepath = File.join(Dir.home, '.ssh', 'slam.pem')
     key = File.exist?(filepath) ? File.read(filepath) : ENV['SLAM_KEYPAIR']
     yield "```\n#{key}\n```"
@@ -45,7 +45,7 @@ module EC2
   end
 
   def create_instance(name)
-    client = Aws::EC2::Client.new(region: 'us-west-2')
+    client = Aws::EC2::Client.new(region: 'us-east-1')
     vm = Aws::EC2::Resource.new(client: client)
     ami = vm.image('ami-5189a661')
     key_pair = vm.key_pair('slam')
@@ -58,17 +58,18 @@ module EC2
   end
 
   def list_instances
-    client = Aws::EC2::Client.new(region: 'us-west-2')
-    instances = client.describe_instances(filters: [
-      {
-        name: 'instance.group-id',
-        values: ['sg-955d19f2']
-      }])
+    client = Aws::EC2::Client.new(region: 'us-east-1')
+    instances = client.describe_instances(
+      filters: [
+        {
+          name: 'instance.group-id',
+          values: ['sg-1a8af861']
+        }])
     instances.reservations.map(&:instances).flatten
   end
 
   def destroy_instance(id)
-    client = Aws::EC2::Client.new(region: 'us-west-2')
+    client = Aws::EC2::Client.new(region: 'us-east-1')
     client.terminate_instances(instance_ids: [id]).terminating_instances.first
   end
 
@@ -76,9 +77,9 @@ module EC2
     {
       min_count: 1, # required
       max_count: 1, # required
-      security_group_ids: ['sg-955d19f2'],
-      instance_type: 't2.micro', # accepts t2.micro, t2.small, t2.medium, t2.large
-      placement: { availability_zone: 'us-west-2b' },
+      security_group_ids: ['sg-1a8af861'],
+      instance_type: 't2.nano', # accepts t2.micro, t2.small, t2.medium, t2.large
+      placement: { availability_zone: 'us-east-1b' },
       monitoring: { enabled: false }, # required
       instance_initiated_shutdown_behavior: 'terminate', # accepts stop, terminate
     }
