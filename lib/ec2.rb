@@ -63,7 +63,7 @@ module EC2
       filters: [
         {
           name: 'instance.group-id',
-          values: ['sg-1a8af861']
+          values: ['sg-a4c1b3df']
         }])
     instances.reservations.map(&:instances).flatten
   end
@@ -77,7 +77,7 @@ module EC2
     {
       min_count: 1, # required
       max_count: 1, # required
-      security_group_ids: ['sg-1a8af861'],
+      security_group_ids: ['sg-a4c1b3df'],
       instance_type: 't2.nano', # accepts t2.micro, t2.small, t2.medium, t2.large
       placement: { availability_zone: 'us-east-1b' },
       monitoring: { enabled: false }, # required
